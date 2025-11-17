@@ -4,3 +4,7 @@ venv
 .idea/
 pyrightconfig.json
 tables/
+*.spec
+build/
+dist/
+storage/

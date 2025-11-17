@@ -101,44 +101,46 @@ class ExcelUploadField:
     def _process_file(self, file_path: str):
         """Обработка выбранного файла"""
 
-        try:
-            logger.info(f"Начало обработки файла: {file_path}")
+        #try:
+        logger.info(f"Начало обработки файла: {file_path}")
 
-            self.processor = ExcelDataProcessor(file_path)
-            processed_data = self.processor.process_table()
+        self.processor = ExcelDataProcessor(file_path)
+        processed_data = self.processor.process_table()
 
-            logger.info(f"Файл успешно обработан: {file_path}")
-            self._show_message(f"Таблица {Path(file_path).name} успешно загружена и обработана!")
 
-            # Вызов колбэка с передачей процессора
-            self.on_file_loaded(self.processor)
+        logger.info(f"Файл успешно обработан: {file_path}")
+        self._show_message(f"Таблица {Path(file_path).name} успешно загружена и обработана!")
 
-        except Exception as e:
-            logger.error(f"Ошибка обработки файла {file_path}: {e}")
-            self._show_error_message(f"Ошибка при обработке файла: {str(e)}")
-            raise
+        # Вызов колбэка с передачей процессора
+        self.on_file_loaded(self.processor)
+
+        #except Exception as e:
+            ##self._show_error_message(f"Ошибка при обработке файла: {str(e)}")
+            #raise
 
     def _handle_file_pick(self, event: ft.FilePickerResultEvent):
         if not event.files:
             logger.debug("Выбор файла отменен")
             return
 
-        try:
-            file = event.files[0]
-            logger.info(f"Выбран файл: {file.name}")
-            self._show_progress()
-            self._set_file_path(file)
-            self._process_file(file.path or file.name)
+        #try:
+        file = event.files[0]
+        logger.info(f"Выбран файл: {file.name}")
+        self._show_progress()
+        self._set_file_path(file)
+        self._process_file(file.path or file.name)
 
-        except Exception as e:
-            logger.error(f"Критическая ошибка при обработке выбора файла: {e}")
-            self._show_error_message("Критическая ошибка при загрузке файла")
+        #except Exception as e:
+            #logger.error(f"Критическая ошибка при обработке выбора файла: {e}")
+            #self._show_error_message("Критическая ошибка при загрузке файла")
 
     def _show_progress(self):
-        self.notification_container.content = ft.ProgressBar(width=800,
-                                                             height=2,
-                                                             color=Colors.SUCCESS,
-                                                             bgcolor=Colors.SECONDARY_COLOR)
+        self.notification_container.content = ft.ProgressBar(
+            width=600,
+            height=2,
+            color=Colors.SUCCESS,
+            bgcolor=Colors.SECONDARY_COLOR
+        )
         self.notification_container.alignment = ft.alignment.center
         self.notification_container.margin = ft.margin.only(top=5)
         self.notification_container.visible = True
@@ -148,8 +150,3 @@ class ExcelUploadField:
     def display_container(self) -> ft.Container:
         """Контейнер для отображения в UI"""
         return self.file_path_display
-
-    @property
-    def is_file_loaded(self):
-        """Проверка, загружен ли файл"""
-        return self.processor is not None

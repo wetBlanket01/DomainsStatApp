@@ -7,7 +7,6 @@ from excel_upload_field import ExcelUploadField
 from data_transfer_manager import DataTransferManager
 import logging
 
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -44,6 +43,14 @@ class DomainsTablesApp:
             value='Загрузите таблицы: final_domains, Динамика сбора',
             size=22,
             no_wrap=False,
+        )
+
+        self.header_container = ft.Container(
+            content=ft.Row([
+                ft.Icon(ft.Icons.TABLE_VIEW, color=ft.Colors.WHITE),
+                self.header_text
+            ], alignment=ft.MainAxisAlignment.CENTER),
+            alignment=ft.alignment.center,
             expand=True
         )
 
@@ -83,7 +90,7 @@ class DomainsTablesApp:
 
         except Exception as e:
             logger.error(f"Ошибка обработки файла {file_number}: {e}")
-            self._show_message(f"Ошибка загрузки файла {file_number}", Colors.ERROR)
+            #self._show_message(f"Ошибка загрузки файла {file_number}", Colors.ERROR)
 
     def _validate_processors(self):
         """Валидация и определение типов таблиц"""
@@ -117,22 +124,31 @@ class DomainsTablesApp:
                 final_domains=final_domains_processor.table_data, dynamic=dynamic_processor.table_data
             )
 
-            #result_table = self.transfer_manager.process()
-
-            self._show_message("Таблицы успешно обработаны!")
-            self.download_button.disabled = False
-            self.download_button.visible = True
-            # self.progress_bar.visible = False
+            # result_table = self.transfer_manager.process()
 
             logger.info("Обработка завершена успешно")
+            self._show_message('Формируется итоговая таблица...', show_progress_bar=True)
 
         except Exception as e:
             logger.error(f"Ошибка обработки таблиц: {e}")
-            # self._show_error(f"Ошибка обработки: {str(e)}")
+            self._show_message(f"Ошибка обработки: {str(e)}", Colors.ERROR)
             # self.progress_bar.visible = False
 
-    def _show_message(self, message: str, color: Colors = Colors.SUCCESS):
-        self.notification_container.content = ft.Text(message, color=color)
+    def _show_message(self, message: str, color: Colors = Colors.SUCCESS, show_progress_bar: bool = False):
+        if show_progress_bar:
+            self.notification_container.content = ft.Row([
+                ft.Text(message, color=color),
+                ft.ProgressBar(
+                    width=200,
+                    height=2,
+                    color=Colors.SUCCESS,
+                    bgcolor=Colors.SECONDARY_COLOR
+                )
+            ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+        else:
+            self.notification_container.content = ft.Text(message, color=color)
+        self.notification_container.visible = True
+        self.notification_container.update()
 
     def build(self):
         """Построение интерфейса"""
@@ -142,10 +158,7 @@ class DomainsTablesApp:
                 ft.Container(
                     content=ft.Column(
                         controls=[
-                            ft.Row([
-                                ft.Icon(ft.Icons.TABLE_VIEW, color=ft.Colors.WHITE),
-                                self.header_text
-                            ], alignment=ft.MainAxisAlignment.CENTER),
+                            self.header_container,
                             self.upload_field.display_container,
                             self.upload_field2.display_container,
                             self.notification_container,
